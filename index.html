@@ -4,47 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Tracker</title>
-    <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="./stlyes.css"/>
 </head>
 <body>
-    <header>
-        <h1>Real-Time Cryptocurrency Tracker</h1>
-    </header>
-    <main>
-        <section id="crypto-list">
-            <h2>Cryptocurrency Listing</h2>
-            <table id="crypto-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Symbol</th>
-                        <th>Price</th>
-                        <th>24h Change</th>
-                        <th>Market Cap</th>
-                        <th>Select</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Dynamically populated -->
-                </tbody>
-            </table>
+    <div class="container">
+        <header>
+            <h1>Crypto Tracker</h1>
+        </header>
+
+        <section class="preferences">
+            <select id="sortPreference">
+                <option value="marketCap">Sort by Market Cap</option>
+                <option value="price">Sort by Price</option>
+                <option value="change">Sort by 24h Change</option>
+            </select>
+            <select id="updateInterval">
+                <option value="60">Update every 60s</option>
+                <option value="30">Update every 30s</option>
+            </select>
         </section>
 
-        <section id="comparison">
-            <h2>Comparison</h2>
-            <div id="comparison-container">
-                <!-- Selected cryptocurrencies for comparison -->
-            </div>
+        <section class="comparison-section">
+            <h2>Comparison (Select up to 5)</h2>
+            <div class="comparison-grid" id="comparisonGrid"></div>
         </section>
 
-        <section id="preferences">
-            <h2>User Preferences</h2>
-            <button id="sort-by-market-cap">Sort by Market Cap</button>
-        </section>
-    </main>
-    <footer>
-        <p>Developed by [Your Name]</p>
-    </footer>
-    <script src="script.js"></script>
+        <section class="crypto-list" id="cryptoList"></section>
+    </div>
+
+  <script src="./app.js"></script>
 </body>
 </html>

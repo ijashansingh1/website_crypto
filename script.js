@@ -1,65 +1,169 @@
-const API_URL = 'https://api.coingecko.com/api/v3/coins/markets';
-const API_PARAMS = '?vs_currency=usd&order=market_cap_desc&per_page=10&page=1';
 
-const cryptoTableBody = document.querySelector('#crypto-table tbody');
-const comparisonContainer = document.getElementById('comparison-container');
-const sortButton = document.getElementById('sort-by-market-cap');
-let selectedCryptos = JSON.parse(localStorage.getItem('selectedCryptos')) || [];
+// Mock data to simulate CoinGecko API response
+const mockData = [
+    {
+        id: 'bitcoin',
+        symbol: 'btc',
+        name: 'Bitcoin',
+        current_price: 48235.67,
+        price_change_percentage_24h: 2.45,
+        market_cap: 938475634523
+    },
+    {
+        id: 'ethereum',
+        symbol: 'eth',
+        name: 'Ethereum',
+        current_price: 2856.32,
+        price_change_percentage_24h: -1.23,
+        market_cap: 345678912345
+    },
+    {
+        id: 'cardano',
+        symbol: 'ada',
+        name: 'Cardano',
+        current_price: 1.23,
+        price_change_percentage_24h: 5.67,
+        market_cap: 123456789012
+    },
+    {
+        id: 'solana',
+        symbol: 'sol',
+        name: 'Solana',
+        current_price: 98.76,
+        price_change_percentage_24h: 3.21,
+        market_cap: 234567890123
+    },
+    {
+        id: 'polkadot',
+        symbol: 'dot',
+        name: 'Polkadot',
+        current_price: 23.45,
+        price_change_percentage_24h: -2.34,
+        market_cap: 345678901234
+    }
+];
 
-async function fetchCryptos() {
-    try {
-        const response = await fetch(API_URL + API_PARAMS);
-        const data = await response.json();
-        populateTable(data);
-    } catch (error) {
-        console.error('Error fetching cryptocurrencies:', error);
+class CryptoTracker {
+    constructor() {
+        this.cryptocurrencies = [];
+        this.comparisonList = new Set();
+        this.loadPreferences();
+        this.initializeEventListeners();
+        this.fetchData();
+    }
+
+    loadPreferences() {
+        const savedComparison = localStorage.getItem('comparisonList');
+        if (savedComparison) {
+            this.comparisonList = new Set(JSON.parse(savedComparison));
+        }
+
+        const sortPreference = localStorage.getItem('sortPreference') || 'marketCap';
+        document.getElementById('sortPreference').value = sortPreference;
+    }
+
+    savePreferences() {
+        localStorage.setItem('comparisonList', JSON.stringify([...this.comparisonList]));
+        localStorage.setItem('sortPreference', document.getElementById('sortPreference').value);
+    }
+
+    async fetchData() {
+        // In a real implementation, this would fetch from CoinGecko API
+        this.cryptocurrencies = mockData;
+        this.sortCryptocurrencies();
+        this.renderCryptoList();
+        this.renderComparisonSection();
+    }
+
+    sortCryptocurrencies() {
+        const sortBy = document.getElementById('sortPreference').value;
+        this.cryptocurrencies.sort((a, b) => {
+            switch(sortBy) {
+                case 'price':
+                    return b.current_price - a.current_price;
+                case 'change':
+                    return b.price_change_percentage_24h - a.price_change_percentage_24h;
+                default:
+                    return b.market_cap - a.market_cap;
+            }
+        });
+    }
+
+    renderCryptoList() {
+        const container = document.getElementById('cryptoList');
+        container.innerHTML = '';
+
+        this.cryptocurrencies.forEach(crypto => {
+            const card = document.createElement('div');
+            card.className = 'crypto-card';
+            card.innerHTML = `
+                <div class="crypto-info">
+                    <h3>${crypto.name} (${crypto.symbol.toUpperCase()})</h3>
+                    <div class="crypto-price">$${crypto.current_price.toLocaleString()}</div>
+                    <div class="price-change ${crypto.price_change_percentage_24h >= 0 ? 'positive' : 'negative'}">
+                        ${crypto.price_change_percentage_24h.toFixed(2)}%
+                    </div>
+                </div>
+                <button onclick="tracker.toggleComparison('${crypto.id}')" 
+                        ${this.comparisonList.has(crypto.id) ? 'class="remove"' : ''}>
+                    ${this.comparisonList.has(crypto.id) ? 'Remove' : 'Compare'}
+                </button>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    renderComparisonSection() {
+        const container = document.getElementById('comparisonGrid');
+        container.innerHTML = '';
+
+        this.cryptocurrencies
+            .filter(crypto => this.comparisonList.has(crypto.id))
+            .forEach(crypto => {
+                const card = document.createElement('div');
+                card.className = 'comparison-card';
+                card.innerHTML = `
+                    <h3>${crypto.name}</h3>
+                    <div class="crypto-price">$${crypto.current_price.toLocaleString()}</div>
+                    <div class="price-change ${crypto.price_change_percentage_24h >= 0 ? 'positive' : 'negative'}">
+                        ${crypto.price_change_percentage_24h.toFixed(2)}%
+                    </div>
+                    <div>Market Cap: $${(crypto.market_cap / 1e9).toFixed(2)}B</div>
+                    <button class="remove" onclick="tracker.toggleComparison('${crypto.id}')">Remove</button>
+                `;
+                container.appendChild(card);
+            });
+    }
+
+    toggleComparison(cryptoId) {
+        if (this.comparisonList.has(cryptoId)) {
+            this.comparisonList.delete(cryptoId);
+        } else if (this.comparisonList.size < 5) {
+            this.comparisonList.add(cryptoId);
+        } else {
+            alert('Maximum 5 cryptocurrencies can be compared at once');
+            return;
+        }
+        
+        this.savePreferences();
+        this.renderCryptoList();
+        this.renderComparisonSection();
+    }
+
+    initializeEventListeners() {
+        document.getElementById('sortPreference').addEventListener('change', () => {
+            this.savePreferences();
+            this.sortCryptocurrencies();
+            this.renderCryptoList();
+        });
+
+        document.getElementById('updateInterval').addEventListener('change', (e) => {
+            clearInterval(this.updateInterval);
+            this.updateInterval = setInterval(() => this.fetchData(), e.target.value * 1000);
+        });
+
+        this.updateInterval = setInterval(() => this.fetchData(), 60000);
     }
 }
 
-function populateTable(cryptos) {
-    cryptoTableBody.innerHTML = '';
-    cryptos.forEach((crypto) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${crypto.name}</td>
-            <td>${crypto.symbol.toUpperCase()}</td>
-            <td>$${crypto.current_price.toFixed(2)}</td>
-            <td>${crypto.price_change_percentage_24h.toFixed(2)}%</td>
-            <td>$${(crypto.market_cap / 1e9).toFixed(2)}B</td>
-            <td>
-                <button onclick="selectCrypto('${crypto.id}')">Select</button>
-            </td>
-        `;
-        cryptoTableBody.appendChild(row);
-    });
-}
-
-function selectCrypto(id) {
-    if (selectedCryptos.length >= 5) {
-        alert('You can only compare up to 5 cryptocurrencies.');
-        return;
-    }
-    if (!selectedCryptos.includes(id)) {
-        selectedCryptos.push(id);
-        localStorage.setItem('selectedCryptos', JSON.stringify(selectedCryptos));
-        updateComparisonSection();
-    }
-}
-
-function updateComparisonSection() {
-    comparisonContainer.innerHTML = '';
-    selectedCryptos.forEach((crypto) => {
-        const div = document.createElement('div');
-        div.textContent = crypto;
-        comparisonContainer.appendChild(div);
-    });
-}
-
-sortButton.addEventListener('click', () => {
-    fetchCryptos();
-});
-
-window.onload = () => {
-    fetchCryptos();
-    updateComparisonSection();
-};
+const tracker = new CryptoTracker();
