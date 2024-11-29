@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Real-Time Cryptocurrency Tracker</h1>
+    </header>
+    <main>
+        <section id="crypto-list">
+            <h2>Cryptocurrency Listing</h2>
+            <table id="crypto-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Symbol</th>
+                        <th>Price</th>
+                        <th>24h Change</th>
+                        <th>Market Cap</th>
+                        <th>Select</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dynamically populated -->
+                </tbody>
+            </table>
+        </section>
+
+        <section id="comparison">
+            <h2>Comparison</h2>
+            <div id="comparison-container">
+                <!-- Selected cryptocurrencies for comparison -->
+            </div>
+        </section>
+
+        <section id="preferences">
+            <h2>User Preferences</h2>
+            <button id="sort-by-market-cap">Sort by Market Cap</button>
+        </section>
+    </main>
+    <footer>
+        <p>Developed by [Your Name]</p>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>
