@@ -69,7 +69,36 @@ class CryptoTracker {
 
     async fetchData() {
         // In a real implementation, this would fetch from CoinGecko API
-        this.cryptocurrencies = mockData;
+        const myHeaders = new Headers();
+        myHeaders.append("accept", "application/json");
+        myHeaders.append("x-cg-demo-api-key", "Your API Key");
+
+        var requestOptions = {
+            method: 'GET',
+            headers: myHeaders,
+            redirect: 'follow'
+        };
+
+        // this.cryptocurrencies = mockApiResponse;
+
+        // const result = await fetch("https://api.coingecko.com/api/v3/coins/markets?vs_currency=cad&ids=bitcoin%2Cethereum%2Csolana%2Cpolkadot%2Cdoge%2Ccardano", requestOptions)
+        // this.cryptocurrencies = await result.json()
+
+        const localCache = localStorage.getItem("api-cache")
+        const cacheObj = JSON.parse(localCache)
+
+        if (localCache === null || (localCache !== null && Date.now() - cacheObj.ts > 30000)) {
+         //   const result = await fetch("https://api.coingecko.com/api/v3/coins/markets?vs_currency=cad&ids=bitcoin%2Cethereum%2Csolana%2Cpolkadot%2Cdoge%2Ccardano", requestOptions)
+       // this.cryptocurrencies = await result.json()
+        this.cryptocurrencies = mockData
+
+            localStorage.setItem("api-cache", JSON.stringify({ "resp": mockData, "ts": Date.now() }))
+            console.log(`Cache Updated at ${Date.now()}`)
+        } else {
+            this.cryptocurrencies = cacheObj.resp
+        }
+
+       // this.cryptocurrencies = mockData;
         this.sortCryptocurrencies();
         this.renderCryptoList();
         this.renderComparisonSection();
